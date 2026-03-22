@@ -1,4 +1,4 @@
-from db.db_processor import save_to_db, get_task_by_id
+from db.db_processor import save_to_db, get_task_list, edit_task_db
 
 def process_task(Task):
     # Here you can add any processing logic you want to perform on the Task object
@@ -14,10 +14,20 @@ def process_task(Task):
 
     return Task
 
-def my_get_task(task_id: int):
+def process_task_list():
 
-    print(f"Inside get_task_by_id with task_id: {task_id}")
+    print(f"Inside process_task_list")
+    res_get_task = get_task_list()
+    all_tasks = []
+    for task in res_get_task:
+        print(f"Task ID: {task.id}, Name: {task.name}, Description: {task.description}, Type: {task.type}, Status: {task.status}")
+        all_tasks.append(task)
 
-    res_get_task = get_task_by_id(task_id)
-    print(f"Result from get_task_by_id: {res_get_task}")   
-    return res_get_task
+    print(f"Result from get_task_list: {res_get_task}")   
+    return all_tasks
+
+def process_edit_task(task_id,  task):
+
+    print(f"Inside process_edit_task with task_id: {task_id} and task: {task}")
+    res_edit_task = edit_task_db(task_id, task)
+    print(f"Result from get_edit_task: {res_edit_task}")

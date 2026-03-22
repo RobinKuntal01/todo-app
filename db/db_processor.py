@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from sqlmodel import Session, SQLModel, create_engine, Field
+from sqlmodel import Session, SQLModel, create_engine, Field, select
 from db.sql_eng import SessionLocal, task as TaskModel
 
 def save_to_db(Task):
@@ -13,6 +13,24 @@ def save_to_db(Task):
         return db_task
 
 
-def get_task_by_id(task_id: int):
-    db = SessionLocal()
-    return db.query(TaskModel).filter(TaskModel.id == task_id).first()
+def get_task_list():
+
+        db = SessionLocal()
+        all_tasks = db.query(TaskModel).all()
+       
+        return all_tasks
+
+def edit_task_db(task_id, task):
+
+        db = SessionLocal()
+        db_task = db.query(TaskModel).filter(TaskModel.id == task_id).first()
+        if db_task:
+            db_task.name = task.name
+            db_task.description = task.description
+            db_task.type = task.type
+            db_task.status = task.status
+            db.commit()
+            db.refresh(db_task)
+            return db_task
+        else:
+            return None

@@ -1,44 +1,160 @@
-
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>Create Todo Task</title>
-        <link rel="stylesheet" href="/static/css/todo.css">
-    </head>
-    <body>
-        <div class="container">
-            <h1>Create Todo Task</h1>
-            <form action="/task" method="post">
-                <div class="form-group">
-                    <label>Task Name:</label>
-                    <input type="text" name="name" required>
-                </div>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TaskFlow</title>
+  <link rel="stylesheet" href="static/css/todo.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
 
-                <div class="form-group">
-                    <label>Task Description:</label>
-                    <textarea name="description" required></textarea>
-                </div>
+  <!-- Background noise overlay -->
+  <div class="noise"></div>
 
-                <div class="form-group">
-                    <label>Status:</label>
-                    <select name="status" required>
-                        <option value=0>Todo</option>
-                        <option value=1>In Progress</option>
-                    </select>
-                </div>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <span class="logo-mark">◈</span>
+      <span class="logo-text">Task<span class="accent">Flow</span></span>
+    </div>
+    <div class="header-right">
+      <div class="user-chip">
+        <div class="user-avatar" id="userAvatar">R</div>
+        <span class="user-name" id="userName">Loading...</span>
+      </div>
+      <div class="stats-bar">
+        <span id="statDone" class="stat done-stat">0 done</span>
+        <span class="divider">·</span>
+        <span id="statPending" class="stat pending-stat">0 pending</span>
+      </div>
+    </div>
+  </header>
 
-                <div class="form-group">
-                    <label>Type:</label>
-                    <select name="type" required>
-                        <option value="feature">Feature</option>
-                        <option value="bug">Bug</option>
-                        <option value="chore">Chore</option>
-                    </select>
-                </div>
+  <!-- Main Layout -->
+  <main class="main-layout">
 
-                <button type="submit">Submit Task</button>
-            </form>
+    <!-- LEFT: Add Task Panel -->
+    <section class="panel panel-left">
+      <div class="panel-header">
+        <h2 class="panel-title">New Task</h2>
+        <span class="panel-sub">Fill in the details below</span>
+      </div>
+
+      <form class="task-form" id="taskForm" autocomplete="off">
+        
+        <div class="field-group">
+          <label class="field-label" for="taskName">Task Name <span class="required">*</span></label>
+          <input class="field-input" id="taskName" type="text" placeholder="e.g. Design landing page" maxlength="80" />
+          <span class="field-hint">Must be unique</span>
         </div>
-        <script src="/static/js/todo.js"></script>
-    </body>
+
+        <div class="field-group">
+          <label class="field-label" for="taskDesc">Description <span class="required">*</span></label>
+          <textarea class="field-input field-textarea" id="taskDesc" placeholder="What needs to be done?" rows="4" maxlength="300"></textarea>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="taskType">Type <span class="required">*</span></label>
+          <div class="select-wrapper">
+            <select class="field-input field-select" id="taskType">
+              <option value="" disabled selected>Select a type</option>
+              <option value="feature">🚀 Feature</option>
+              <option value="bug">🐛 Bug Fix</option>
+              <option value="research">🔍 Research</option>
+              <option value="review">👁 Review</option>
+              <option value="meeting">📅 Meeting</option>
+              <option value="deployment">⚙️ Deployment</option>
+              <option value="other">📌 Other</option>
+            </select>
+            <span class="select-arrow">▾</span>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-ghost" id="clearBtn">Clear</button>
+          <button type="submit" class="btn-primary" id="submitBtn">
+            <span class="btn-text">Add Task</span>
+            <span class="btn-icon">→</span>
+          </button>
+        </div>
+
+        <div class="form-msg" id="formMsg"></div>
+      </form>
+
+      <!-- Decorative element -->
+      <div class="deco-block"></div>
+    </section>
+
+    <!-- RIGHT: Task List Panel -->
+    <section class="panel panel-right">
+      <div class="panel-header">
+        <div class="panel-header-top">
+          <h2 class="panel-title">Task Board</h2>
+          <div class="filter-tabs">
+            <button class="tab active" data-filter="all">All</button>
+            <button class="tab" data-filter="pending">Pending</button>
+            <button class="tab" data-filter="done">Done</button>
+          </div>
+        </div>
+        <input class="search-input" id="searchInput" type="text" placeholder="Search tasks…" />
+      </div>
+
+      <div class="task-list" id="taskList">
+        <div class="empty-state" id="emptyState">
+          <span class="empty-icon">◎</span>
+          <p>No tasks yet. Add one to get started.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Edit Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Task</h3>
+        <button class="modal-close" id="modalClose">✕</button>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Task Name</label>
+        <input class="field-input" id="editName" type="text" maxlength="80" />
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Description</label>
+        <textarea class="field-input field-textarea" id="editDesc" rows="4" maxlength="300"></textarea>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Type</label>
+        <div class="select-wrapper">
+          <select class="field-input field-select" id="editType">
+            <option value="feature">🚀 Feature</option>
+            <option value="bug">🐛 Bug Fix</option>
+            <option value="research">🔍 Research</option>
+            <option value="review">👁 Review</option>
+            <option value="meeting">📅 Meeting</option>
+            <option value="deployment">⚙️ Deployment</option>
+            <option value="other">📌 Other</option>
+          </select>
+          <span class="select-arrow">▾</span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-ghost" id="modalCancelBtn">Cancel</button>
+        <button class="btn-primary" id="modalSaveBtn">Save Changes →</button>
+      </div>
+      <div class="form-msg" id="modalMsg"></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="/static/js/todo.js"></script>
+</body>
 </html>
