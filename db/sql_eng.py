@@ -19,7 +19,7 @@ Base = sqlalchemy.orm.declarative_base()
 
 class task(Base):
     __tablename__ = "tasks"
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
     name = Column(String, unique=True, nullable=False)
     description = Column(String, nullable=False)
     type = Column(String, nullable=False) 
